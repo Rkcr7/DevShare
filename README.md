@@ -9,12 +9,12 @@
 </h1>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#use-cases">Use Cases</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#troubleshooting">Troubleshooting</a>
+  <a href="#rocket-features">Features</a> •
+  <a href="#bulb-use-cases">Use Cases</a> •
+  <a href="#key-getting-started">Getting Started</a> •
+  <a href="#wrench-installation">Installation</a> •
+  <a href="#iphone-usage">Usage</a> •
+  <a href="#warning-troubleshooting">Troubleshooting</a>
 </p>
 
 <p align="center">
