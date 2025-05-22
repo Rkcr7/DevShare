@@ -1,8 +1,12 @@
 <p align="center">
-  <img src="public/logo-big.png" alt="Screenshot Manager Logo" width="150"/>
+  <a href="https://github.com/Rkcr7/DevShare">
+    <img src="public/logo-big.png" alt="Screenshot Manager Logo" width="150"/>
+  </a>
 </p>
 
-<h1 align="center">Screenshot Manager</h1>
+<h1 align="center">
+  <a href="https://github.com/Rkcr7/DevShare">Screenshot Manager</a>
+</h1>
 
 <p align="center">
   <a href="#features">Features</a> •
@@ -14,10 +18,18 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.6+-blue.svg" alt="Python 3.6+"/>
-  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey" alt="Platform Support"/>
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"/>
-  <img src="https://img.shields.io/badge/Developer-Ritik-orange.svg" alt="Developer"/>
+  <a href="https://github.com/Rkcr7/DevShare">
+    <img src="https://img.shields.io/badge/Python-3.6+-blue.svg" alt="Python 3.6+"/>
+  </a>
+  <a href="https://github.com/Rkcr7/DevShare">
+    <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey" alt="Platform Support"/>
+  </a>
+  <a href="https://github.com/Rkcr7/DevShare/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"/>
+  </a>
+  <a href="https://github.com/Rkcr7">
+    <img src="https://img.shields.io/badge/Developer-Ritik-orange.svg" alt="Developer"/>
+  </a>
 </p>
 
 ## 📸 Overview
@@ -100,8 +112,8 @@ Once installed, you'll use the official Screenshot Manager bot:
 ### Windows
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Rkcr7/screenshot-manager.git
-cd screenshot-manager
+git clone https://github.com/Rkcr7/DevShare.git
+cd DevShare
 
 # 2. Run the setup script
 setup.bat
@@ -113,8 +125,8 @@ run_screenshot_manager.bat
 ### Linux/macOS
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Rkcr7/screenshot-manager.git
-cd screenshot-manager
+git clone https://github.com/Rkcr7/DevShare.git
+cd DevShare
 
 # 2. Make scripts executable
 chmod +x setup.sh run_screenshot_manager.sh
@@ -186,6 +198,15 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 👨‍💻 Developer
 
 Developed by [Ritik](https://github.com/Rkcr7) to streamline the screenshot sharing workflow between devices.
+
+### Repository
+- **GitHub Repository**: [github.com/Rkcr7/DevShare](https://github.com/Rkcr7/DevShare)
+- **Clone URL**: `https://github.com/Rkcr7/DevShare.git`
+- **Report Issues**: [github.com/Rkcr7/DevShare/issues](https://github.com/Rkcr7/DevShare/issues)
+
+### Contact
+- **Email**: [ritik135001@gmail.com](mailto:ritik135001@gmail.com)
+- If you have questions, bug reports, or feature requests, feel free to reach out via email or create an issue on GitHub
 
 ## 🙏 Acknowledgements
 
