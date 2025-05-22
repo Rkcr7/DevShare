@@ -1,11 +1,11 @@
 <p align="center">
   <a href="https://github.com/Rkcr7/DevShare">
-    <img src="public/logo-big.png" alt="Screenshot Manager Logo" width="150"/>
+    <img src="public/logo-big.png" alt="DevShare Logo" width="150"/>
   </a>
 </p>
 
 <h1 align="center">
-  <a href="https://github.com/Rkcr7/DevShare">Screenshot Manager</a>
+  <a href="https://github.com/Rkcr7/DevShare">DevShare</a>
 </h1>
 
 <p align="center">
@@ -34,10 +34,10 @@
 
 ## 📸 Overview
 
-Screenshot Manager is a cross-platform productivity tool that seamlessly transfers screenshots from your phone to your computer with zero friction. It automatically copies received screenshots to your clipboard, making them instantly available for pasting in any application.
+DevShare is a cross-platform productivity tool that seamlessly transfers screenshots from your phone to your computer with zero friction. It automatically copies received screenshots to your clipboard, making them instantly available for pasting in any application.
 
 <p align="center">
-  <img src="screenshots/screenshot_example.png" alt="Screenshot Manager Demo" width="700"/>
+  <img src="screenshots/screenshot_example.png" alt="DevShare Demo" width="700"/>
 </p>
 
 ## 🚀 Features
@@ -94,7 +94,7 @@ Gather visual data efficiently:
 
 ## 🔑 Getting Started
 
-Before installation, you'll need your Telegram ID to authenticate with the service:
+Before installing DevShare, you'll need your Telegram ID to authenticate with the service:
 
 1. Open Telegram on your phone or desktop
 2. Search for the bot named **@userinfobot**
@@ -102,7 +102,7 @@ Before installation, you'll need your Telegram ID to authenticate with the servi
 4. The bot will reply with your Telegram User ID (a number like `123456789`)
 5. Note this number as you'll need it during setup
 
-Once installed, you'll use the official Screenshot Manager bot:
+Once installed, you'll use the official DevShare bot:
 - Search for **@Screenshot_rk7_bot** in Telegram
 - Or visit directly: [t.me/Screenshot_rk7_bot](https://t.me/Screenshot_rk7_bot)
 - Only your authorized device will receive the screenshots you send to this bot
@@ -119,7 +119,7 @@ cd DevShare
 setup.bat
 
 # 3. Launch the application
-run_screenshot_manager.bat
+run_devshare.bat
 ```
 
 ### Linux/macOS
@@ -129,13 +129,13 @@ git clone https://github.com/Rkcr7/DevShare.git
 cd DevShare
 
 # 2. Make scripts executable
-chmod +x setup.sh run_screenshot_manager.sh
+chmod +x setup.sh run_devshare.sh
 
 # 3. Run the setup script
 ./setup.sh
 
 # 4. Launch the application
-./run_screenshot_manager.sh
+./run_devshare.sh
 ```
 
 ### Manual Installation

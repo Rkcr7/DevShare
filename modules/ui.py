@@ -53,7 +53,7 @@ class ScreenshotUI:
         
         # Create the main window
         self.root = ctk.CTk()
-        self.root.title("Screenshot Manager")
+        self.root.title("DevShare")
         self.root.geometry("750x600")  # Smaller window size
         self.root.minsize(700, 500)
         
@@ -108,7 +108,7 @@ class ScreenshotUI:
         # App title with better font but slightly smaller
         title_label = ctk.CTkLabel(
             header_frame,
-            text="Screenshot Manager",
+            text="DevShare",
             font=ctk.CTkFont(size=18, weight="bold"),  # Reduced font size
             text_color="#1E88E5"
         )
