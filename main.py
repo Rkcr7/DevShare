@@ -70,8 +70,8 @@ def handle_new_screenshot(file_path, timestamp):
         history = load_history()
         ui.history = history
         
-        # Update the UI - forcing a single refresh and preventing double refresh
-        ui.refresh_history(force=True)
+        # Update the UI - allowing cooldown to manage refresh rate
+        ui.refresh_history()
         
         # Just update status without triggering another refresh
         ui.update_status(f"New screenshot received: {timestamp}")
