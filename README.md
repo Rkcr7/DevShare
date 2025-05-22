@@ -40,6 +40,36 @@ DevShare is a cross-platform productivity tool that seamlessly transfers screens
   <img src="screenshots/screenshot_example.png" alt="DevShare Demo" width="700"/>
 </p>
 
+## 🌐 Server Component
+
+DevShare works with a server component that handles communication between your phone and your computer:
+
+### Default Server
+
+By default, DevShare uses our pre-deployed server at:
+```
+https://devshare-production.up.railway.app
+```
+
+This server is already configured in the setup wizard and the default `config.json` file, so most users won't need to change anything.
+
+### Deploying Your Own Server
+
+If you prefer to run your own server (for privacy, customization, or reliability):
+
+1. Visit the [DevShare Server Repository](https://github.com/Rkcr7/DevShare-server)
+2. Follow the deployment instructions to set up your server on Railway
+3. After deployment, get your server's public URL from Railway (Settings > Networking)
+4. Update your `config.json` file with your custom server URL:
+   ```json
+   {
+     "telegram_id": "YOUR_TELEGRAM_ID",
+     "service_url": "YOUR_CUSTOM_SERVER_URL"
+   }
+   ```
+
+Using your own server provides full control over the data flow and can improve reliability for heavy users.
+
 ## 🚀 Features
 
 - **Phone-to-PC Sync**: Instantly transfer screenshots from your mobile to your computer
@@ -167,7 +197,9 @@ If the setup wizard doesn't appear or you need to manually configure the applica
 2. Replace `YOUR_TELEGRAM_ID` with your actual Telegram ID (numeric value)
    - To find your ID, message @userinfobot on Telegram
 
-3. The `service_url` is pre-configured to the cloud server - typically you won't need to change this value
+3. The `service_url` is pre-configured to the default cloud server
+   - If you've deployed your own server, replace this with your custom URL
+   - For information on deploying your own server, see the [Server Component](#-server-component) section
 
 4. After creating the file, run the application using `python main.py`
 
@@ -189,7 +221,11 @@ If the setup wizard doesn't appear or you need to manually configure the applica
   - Linux: Ensure xclip is installed (`sudo apt-get install xclip`)
   - macOS: No additional setup needed
 - **UI Issues**: Make sure customtkinter is installed correctly (`pip install customtkinter==5.2.0`)
-- **Connection Problems**: Verify your internet connection and that the service is available
+- **Connection Problems**: 
+  - Verify your internet connection and that the service is available
+  - If using the default server, check https://devshare-production.up.railway.app is accessible
+  - If using your own server, ensure it's properly deployed and running
+- **Server Issues**: If you're experiencing persistent connection problems, consider deploying your own server using the [DevShare Server Repository](https://github.com/Rkcr7/DevShare-server)
 
 ## 📝 License
 
@@ -212,4 +248,5 @@ Developed by [Ritik](https://github.com/Rkcr7) to streamline the screenshot shar
 
 - [Python Telegram Bot](https://github.com/python-telegram-bot/python-telegram-bot) for the Telegram integration
 - [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) for the modern UI components
+- [DevShare Server](https://github.com/Rkcr7/DevShare-server) for the backend component
 - All contributors and users who provide feedback and suggestions 
