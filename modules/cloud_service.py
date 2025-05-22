@@ -8,6 +8,7 @@ import time
 from PIL import Image
 from datetime import datetime
 import logging
+import random
 
 # Configure logging
 logging.basicConfig(
@@ -17,7 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class CloudService:
-    """Client for interacting with the Screenshot Manager cloud service"""
+    """Client for interacting with the DevShare cloud service"""
     
     def __init__(self, telegram_id, callback=None, config_file='./config.json'):
         """
@@ -37,6 +38,11 @@ class CloudService:
         self.connected = False
         self.stop_event = threading.Event()
         self.polling_thread = None
+        self.reconnect_attempts = 0
+        self.max_reconnect_attempts = 10
+        self.reconnect_backoff_base = 2  # For exponential backoff
+        self.reconnect_max_delay = 60  # Maximum delay between reconnection attempts
+        self.reconnect_jitter = 0.5  # Random jitter factor to avoid thundering herd
         
         # Load config if it exists
         self._load_config()
@@ -44,7 +50,7 @@ class CloudService:
     def _load_config(self):
         """Load configuration from file"""
         try:
-            if os.path.exists(self.config_file):
+            if self.config_file and os.path.exists(self.config_file):
                 with open(self.config_file, 'r') as f:
                     config = json.load(f)
                     if 'service_url' in config:
@@ -57,6 +63,9 @@ class CloudService:
     def _save_config(self):
         """Save configuration to file"""
         try:
+            if not self.config_file:
+                return
+                
             # Load existing config if file exists
             config = {}
             if os.path.exists(self.config_file):
@@ -71,21 +80,33 @@ class CloudService:
             # Save back to file
             with open(self.config_file, 'w') as f:
                 json.dump(config, f)
+                
+            return True
         except Exception as e:
             logger.error(f"Error saving config: {str(e)}")
+            return False
     
-    def connect(self, service_url=None):
+    def connect(self, service_url=None, force_reconnect=False):
         """
         Connect to the cloud service
         
         Args:
             service_url (str, optional): Override the service URL
+            force_reconnect (bool): Force a new connection even if already connected
             
         Returns:
             bool: True if connection successful, False otherwise
         """
         if service_url:
             self.service_url = service_url
+            
+        # If already connected and not forcing reconnect, just return success
+        if self.connected and not force_reconnect:
+            return True
+            
+        # Disconnect any existing connection first
+        if self.connected:
+            self.disconnect()
         
         try:
             # Register with the service
@@ -111,6 +132,7 @@ class CloudService:
             # Start polling for new screenshots
             self.connected = True
             self.stop_event.clear()
+            self.reconnect_attempts = 0  # Reset reconnect attempts counter
             self.polling_thread = threading.Thread(target=self._polling_loop)
             self.polling_thread.daemon = True
             self.polling_thread.start()
@@ -126,9 +148,58 @@ class CloudService:
         """Disconnect from the cloud service"""
         self.connected = False
         self.stop_event.set()
-        if self.polling_thread:
+        if self.polling_thread and self.polling_thread.is_alive():
             self.polling_thread.join(timeout=2)
         logger.info("Disconnected from service")
+    
+    def _should_attempt_reconnect(self):
+        """Determine if reconnection should be attempted based on attempt count"""
+        if self.reconnect_attempts >= self.max_reconnect_attempts:
+            logger.warning(f"Maximum reconnection attempts ({self.max_reconnect_attempts}) reached. Giving up.")
+            return False
+        return True
+        
+    def _calculate_reconnect_delay(self):
+        """Calculate delay time for reconnection with exponential backoff and jitter"""
+        # Exponential backoff
+        delay = min(
+            self.reconnect_max_delay,
+            pow(self.reconnect_backoff_base, min(self.reconnect_attempts, 6))  # Cap the exponent to avoid extremely long delays
+        )
+        
+        # Add jitter (±jitter%)
+        jitter_factor = 1.0 + (random.random() * self.reconnect_jitter * 2) - self.reconnect_jitter
+        delay = delay * jitter_factor
+        
+        return delay
+        
+    def _handle_connection_error(self, error_message):
+        """Handle connection errors with potential reconnection"""
+        logger.error(error_message)
+        
+        # Don't attempt reconnect if we're not supposed to be connected
+        if not self.connected or self.stop_event.is_set():
+            return False
+            
+        # Increment reconnect attempts
+        self.reconnect_attempts += 1
+        
+        # Check if we should try to reconnect
+        if not self._should_attempt_reconnect():
+            logger.error("Reconnection attempts exhausted. Connection failed.")
+            self.connected = False
+            return False
+            
+        # Calculate delay with exponential backoff
+        delay = self._calculate_reconnect_delay()
+        
+        logger.info(f"Connection error detected. Attempting reconnect ({self.reconnect_attempts}/{self.max_reconnect_attempts}) in {delay:.2f} seconds...")
+        
+        # Wait before attempting reconnection
+        time.sleep(delay)
+        
+        # Attempt reconnection
+        return self.connect(force_reconnect=True)
     
     def _polling_loop(self):
         """Background thread to poll for new screenshots"""
@@ -144,21 +215,39 @@ class CloudService:
                     )
                     
                     if response.status_code != 200:
-                        logger.error(f"Error polling service: {response.text}")
-                        time.sleep(self.polling_interval)
-                        continue
+                        if self._handle_connection_error(f"Error polling service: {response.text}"):
+                            continue  # Successfully reconnected, continue polling
+                        else:
+                            break  # Failed to reconnect, exit polling loop
                     
                     data = response.json()
                     if data.get('status') != 'success':
-                        logger.error(f"Error polling service: {data.get('message')}")
-                        time.sleep(self.polling_interval)
-                        continue
+                        # Check specifically for invalid connection_id
+                        if data.get('message') == 'Invalid connection_id':
+                            if self._handle_connection_error("Error polling service: Invalid connection_id"):
+                                continue  # Successfully reconnected, continue polling
+                            else:
+                                break  # Failed to reconnect, exit polling loop
+                        else:
+                            logger.error(f"Error polling service: {data.get('message')}")
+                            time.sleep(self.polling_interval)
+                            continue
+                    
+                    # Connection is working, reset reconnect attempts
+                    self.reconnect_attempts = 0
                     
                     # Check if there are pending screenshots
                     if data.get('has_pending_screenshots'):
                         self._fetch_screenshots()
             
+            except requests.RequestException as e:
+                # Network-related errors should trigger reconnection
+                if self._handle_connection_error(f"Network error in polling loop: {str(e)}"):
+                    continue
+                else:
+                    break
             except Exception as e:
+                # Other errors should be logged but not necessarily trigger reconnection
                 logger.error(f"Error in polling loop: {str(e)}")
             
             # Wait for next poll
@@ -179,7 +268,11 @@ class CloudService:
             
             data = response.json()
             if data.get('status') != 'success':
-                logger.error(f"Error fetching screenshots: {data.get('message')}")
+                # Check specifically for invalid connection_id
+                if data.get('message') == 'Invalid connection_id':
+                    self._handle_connection_error("Error fetching screenshots: Invalid connection_id")
+                else:
+                    logger.error(f"Error fetching screenshots: {data.get('message')}")
                 return
             
             # Process screenshots
@@ -287,5 +380,6 @@ class CloudService:
         return {
             "connected": self.connected,
             "connection_id": self.connection_id,
-            "service_url": self.service_url
+            "service_url": self.service_url,
+            "reconnect_attempts": self.reconnect_attempts
         } 

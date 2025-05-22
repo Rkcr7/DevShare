@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "============================================"
-echo "Screenshot Manager - Easy Setup"
+echo "DevShare - Easy Setup"
 echo "============================================"
 echo
 
@@ -83,7 +83,7 @@ fi
 echo
 echo "============================================"
 echo "Setup complete! You can now run the application with:"
-echo "bash run_screenshot_manager.sh"
+echo "bash run_devshare.sh"
 echo "============================================"
 
 read -p "Press Enter to continue..." 

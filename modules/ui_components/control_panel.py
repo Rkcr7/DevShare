@@ -103,75 +103,46 @@ class ControlPanel:
         notify_check.pack(side="left")
         
     def show_about(self):
-        """Show About dialog with app logo and information."""
+        """Show about dialog"""
         about_window = ctk.CTkToplevel(self.parent)
-        about_window.title("About Screenshot Manager")
-        about_window.geometry("400x350")
+        about_window.title("About DevShare")
+        about_window.geometry("400x400")
         about_window.resizable(False, False)
-        about_window.focus_set()  # Set focus to the window
-        about_window.grab_set()   # Make the window modal
         
-        # Make the window appear in center of parent
+        # Make it modal
+        about_window.transient(self.parent)
+        about_window.grab_set()
+        
+        # Center on parent
         about_window.update_idletasks()
         x = self.parent.winfo_rootx() + (self.parent.winfo_width() - about_window.winfo_width()) // 2
         y = self.parent.winfo_rooty() + (self.parent.winfo_height() - about_window.winfo_height()) // 2
         about_window.geometry(f"+{x}+{y}")
         
-        # Container frame
-        container = ctk.CTkFrame(about_window, fg_color="transparent")
-        container.pack(fill="both", expand=True, padx=20, pady=20)
+        # Content frame
+        content_frame = ctk.CTkFrame(about_window)
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
-        # Load and display the big logo
+        # Logo
         logo_path = os.path.join("public", "logo-big.png")
         if os.path.exists(logo_path):
             try:
                 logo_image = Image.open(logo_path)
-                logo_image = logo_image.resize((128, 128))  # Resize for dialog
-                logo_photo = ctk.CTkImage(light_image=logo_image, dark_image=logo_image, size=(128, 128))
-                logo_label = ctk.CTkLabel(container, image=logo_photo, text="")
+                logo_image = logo_image.resize((100, 100))
+                logo_photo = ctk.CTkImage(light_image=logo_image, dark_image=logo_image, size=(100, 100))
+                logo_label = ctk.CTkLabel(content_frame, image=logo_photo, text="")
                 logo_label._image = logo_photo  # Keep reference
                 logo_label.pack(pady=(0, 10))
             except Exception as e:
                 print(f"Error loading logo: {e}")
         
-        # App title
+        # App name
         title_label = ctk.CTkLabel(
-            container,
-            text="Screenshot Manager",
-            font=ctk.CTkFont(size=24, weight="bold"),
-            text_color="#1E88E5"
+            content_frame, 
+            text="DevShare",
+            font=ctk.CTkFont(size=24, weight="bold")
         )
-        title_label.pack(pady=5)
-        
-        # App version
-        version_label = ctk.CTkLabel(
-            container,
-            text="Version 1.0",
-            font=ctk.CTkFont(size=14),
-            text_color="#555555"
-        )
-        version_label.pack(pady=5)
-        
-        # App description
-        desc_label = ctk.CTkLabel(
-            container,
-            text="Easily manage screenshots sent from your phone\nvia Telegram to your PC.",
-            font=ctk.CTkFont(size=14),
-            text_color="#333333"
-        )
-        desc_label.pack(pady=10)
-        
-        # Close button
-        close_button = ctk.CTkButton(
-            container,
-            text="Close",
-            command=about_window.destroy,
-            height=32,
-            width=100,
-            corner_radius=8,
-            font=ctk.CTkFont(size=13)
-        )
-        close_button.pack(pady=10)
+        title_label.pack(pady=(0, 10))
         
     def update_notify_setting(self):
         """Update the bot's notification setting when checkbox is toggled."""

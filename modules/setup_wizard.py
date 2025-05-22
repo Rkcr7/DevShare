@@ -9,7 +9,7 @@ import time
 from modules.cloud_service import CloudService
 
 class SetupWizard:
-    """Setup wizard for the Screenshot Manager"""
+    """Setup wizard for the DevShare application"""
     
     def __init__(self, parent=None, on_complete=None):
         """
@@ -22,7 +22,6 @@ class SetupWizard:
         self.parent = parent
         self.on_complete = on_complete
         self.wizard = None
-        self.connection_test_in_progress = False
         self.telegram_id = ""
         self.service_url = "https://devshare-production.up.railway.app"  # Updated to Railway URL
         self.config_file = './config.json'
@@ -59,20 +58,24 @@ class SetupWizard:
             # Save back to file
             with open(self.config_file, 'w') as f:
                 json.dump(config, f)
+                
+            print(f"Configuration saved to {self.config_file}")
+            return True
         except Exception as e:
             print(f"Error saving config: {e}")
+            return False
     
     def show(self):
         """Show the setup wizard"""
         # Create wizard window
         self.wizard = ctk.CTkToplevel(self.parent) if self.parent else ctk.CTk()
-        self.wizard.title("Screenshot Manager Setup")
-        self.wizard.geometry("600x500")
-        self.wizard.resizable(False, False)
+        self.wizard.title("Devshare Setup Wizard")
+        self.wizard.geometry("500x500")  # More compact size
+        self.wizard.resizable(False, False)  # Fixed size for better layout
         
         if self.parent:
-            self.wizard.transient(self.parent)  # Set as transient to parent
-            self.wizard.grab_set()  # Make it modal
+            self.wizard.transient(self.parent)
+            self.wizard.grab_set()
             
             # Center on parent
             self.wizard.update_idletasks()
@@ -88,176 +91,177 @@ class SetupWizard:
             y = (self.wizard.winfo_screenheight() // 2) - (height // 2)
             self.wizard.geometry(f"+{x}+{y}")
         
-        # Main container with padding
-        container = ctk.CTkFrame(self.wizard, fg_color="transparent")
-        container.pack(fill="both", expand=True, padx=20, pady=20)
+        # Main container
+        container = ctk.CTkFrame(self.wizard)
+        container.pack(fill="both", expand=True, padx=15, pady=15)
+        
+        # Header frame
+        header_frame = ctk.CTkFrame(container, fg_color="transparent")
+        header_frame.pack(fill="x", pady=(0, 10))
         
         # App logo
         logo_path = os.path.join("public", "logo-big.png")
         if os.path.exists(logo_path):
             try:
                 logo_image = Image.open(logo_path)
-                logo_image = logo_image.resize((100, 100))
-                logo_photo = ctk.CTkImage(light_image=logo_image, dark_image=logo_image, size=(100, 100))
-                logo_label = ctk.CTkLabel(container, image=logo_photo, text="")
+                logo_image = logo_image.resize((60, 60))  # Smaller logo
+                logo_photo = ctk.CTkImage(light_image=logo_image, dark_image=logo_image, size=(60, 60))
+                logo_label = ctk.CTkLabel(header_frame, image=logo_photo, text="")
                 logo_label._image = logo_photo  # Keep reference
-                logo_label.pack(pady=(0, 10))
+                logo_label.pack(side="left", padx=(0, 10))
             except Exception as e:
                 print(f"Error loading logo: {e}")
         
         # Title
+        title_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+        title_frame.pack(side="left", fill="both", expand=True)
+        
         title_label = ctk.CTkLabel(
-            container,
-            text="Setup Wizard",
-            font=ctk.CTkFont(size=24, weight="bold"),
+            title_frame,
+            text="Devshare Setup Wizard",
+            font=ctk.CTkFont(size=20, weight="bold"),
             text_color="#1E88E5"
         )
-        title_label.pack(pady=(0, 20))
+        title_label.pack(anchor="w")
         
-        # Instructions
-        instructions = (
-            "Welcome to Screenshot Manager! This wizard will help you set up "
-            "the application to work with the Telegram bot service."
+        subtitle_label = ctk.CTkLabel(
+            title_frame,
+            text="Connect your Telegram ID to receive screenshots",
+            font=ctk.CTkFont(size=12),
+            text_color="#555555"
         )
-        
-        instructions_label = ctk.CTkLabel(
-            container,
-            text=instructions,
-            font=ctk.CTkFont(size=14),
-            wraplength=550
-        )
-        instructions_label.pack(pady=(0, 20), fill="x")
-        
-        # Telegram ID Frame
-        id_frame = ctk.CTkFrame(container, fg_color="#F5F7F9", corner_radius=10)
-        id_frame.pack(fill="x", pady=(0, 15))
-        
-        id_title = ctk.CTkLabel(
-            id_frame,
-            text="Step 1: Enter Your Telegram ID",
-            font=ctk.CTkFont(size=16, weight="bold"),
-            text_color="#333333"
-        )
-        id_title.pack(anchor="w", padx=15, pady=(10, 5))
-        
-        # Telegram ID instructions
-        id_instructions = (
-            "To find your Telegram ID:\n"
-            "1. Open Telegram and search for @userinfobot\n"
-            "2. Start a chat with this bot\n"
-            "3. The bot will reply with your User ID (a number)"
-        )
-        
-        id_label = ctk.CTkLabel(
-            id_frame,
-            text=id_instructions,
-            font=ctk.CTkFont(size=14),
-            justify="left"
-        )
-        id_label.pack(anchor="w", padx=15, pady=(0, 10))
-        
-        # Telegram ID input
-        id_input_frame = ctk.CTkFrame(id_frame, fg_color="transparent")
-        id_input_frame.pack(fill="x", padx=15, pady=(0, 10))
-        
-        id_label = ctk.CTkLabel(
-            id_input_frame,
-            text="Your Telegram ID:",
-            font=ctk.CTkFont(size=14),
-            width=120
-        )
-        id_label.pack(side="left")
-        
-        id_entry = ctk.CTkEntry(
-            id_input_frame,
-            width=320,
-            height=30,
-            placeholder_text="Enter your Telegram ID (e.g., 123456789)"
-        )
-        id_entry.pack(side="left", padx=10)
-        if self.telegram_id:
-            id_entry.insert(0, self.telegram_id)
-            
-        # Find ID button - opens Telegram
-        find_id_button = ctk.CTkButton(
-            id_frame,
-            text="Open Telegram to Find Your ID",
-            command=lambda: webbrowser.open("https://t.me/userinfobot"),
-            height=30,
-            width=200,
-            fg_color="#0088cc",  # Telegram blue
-            hover_color="#0077b5"
-        )
-        find_id_button.pack(pady=(0, 10))
-        
-        # Service URL Frame
-        service_frame = ctk.CTkFrame(container, fg_color="#F5F7F9", corner_radius=10)
-        service_frame.pack(fill="x", pady=(0, 15))
-        
-        service_title = ctk.CTkLabel(
-            service_frame,
-            text="Step 2: Service Connection",
-            font=ctk.CTkFont(size=16, weight="bold"),
-            text_color="#333333"
-        )
-        service_title.pack(anchor="w", padx=15, pady=(10, 5))
-        
-        # Service instructions
-        service_instructions = (
-            "Connect to the Screenshot Manager service to receive screenshots from "
-            "the Telegram bot. The default URL should work unless instructed otherwise."
-        )
-        
-        service_label = ctk.CTkLabel(
-            service_frame,
-            text=service_instructions,
-            font=ctk.CTkFont(size=14),
-            justify="left",
-            wraplength=550
-        )
-        service_label.pack(anchor="w", padx=15, pady=(0, 10))
-        
-        # Service URL input
-        url_input_frame = ctk.CTkFrame(service_frame, fg_color="transparent")
-        url_input_frame.pack(fill="x", padx=15, pady=(0, 10))
-        
-        url_label = ctk.CTkLabel(
-            url_input_frame,
-            text="Service URL:",
-            font=ctk.CTkFont(size=14),
-            width=120
-        )
-        url_label.pack(side="left")
-        
-        url_entry = ctk.CTkEntry(
-            url_input_frame,
-            width=320,
-            height=30
-        )
-        url_entry.insert(0, self.service_url)
-        url_entry.pack(side="left", padx=10)
+        subtitle_label.pack(anchor="w")
         
         # Status message
         status_var = ctk.StringVar(value="")
         status_label = ctk.CTkLabel(
             container,
             textvariable=status_var,
-            font=ctk.CTkFont(size=14),
-            text_color="#555555"
+            font=ctk.CTkFont(size=13),
+            text_color="#555555",
+            wraplength=470
         )
-        status_label.pack(pady=10)
+        status_label.pack(pady=(0, 10), fill="x")
         
-        # Test connection button
-        test_button = ctk.CTkButton(
-            container,
-            text="Test Connection",
-            command=lambda: self._test_connection(id_entry.get(), url_entry.get(), status_var, test_button),
-            height=35,
-            width=150
+        # Content frame
+        content_frame = ctk.CTkFrame(container)
+        content_frame.pack(fill="both", expand=True, pady=(0, 10))
+        
+        # Telegram ID Frame
+        id_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+        id_frame.pack(fill="x", padx=10, pady=10)
+        
+        id_title = ctk.CTkLabel(
+            id_frame,
+            text="Step 1: Enter Your Telegram ID",
+            font=ctk.CTkFont(size=14, weight="bold"),
+            anchor="w"
         )
-        test_button.pack(pady=(0, 10))
+        id_title.pack(fill="x", pady=(0, 5))
         
-        # Save button
+        # Compact instructions
+        id_instructions = ctk.CTkLabel(
+            id_frame,
+            text="To find your ID: Open Telegram → @userinfobot → Start chat → Get ID",
+            font=ctk.CTkFont(size=12),
+            justify="left",
+            anchor="w"
+        )
+        id_instructions.pack(fill="x", pady=(0, 10))
+        
+        # ID input row
+        id_input_frame = ctk.CTkFrame(id_frame, fg_color="transparent")
+        id_input_frame.pack(fill="x")
+        
+        id_label = ctk.CTkLabel(
+            id_input_frame,
+            text="Your Telegram ID:",
+            font=ctk.CTkFont(size=13),
+            width=110
+        )
+        id_label.pack(side="left")
+        
+        id_entry = ctk.CTkEntry(
+            id_input_frame,
+            height=30,
+            placeholder_text="Enter ID (e.g., 123456789)"
+        )
+        id_entry.pack(side="left", fill="x", expand=True, padx=(5, 0))
+        
+        if self.telegram_id:
+            id_entry.insert(0, self.telegram_id)
+        
+        # Button row
+        id_buttons_frame = ctk.CTkFrame(id_frame, fg_color="transparent")
+        id_buttons_frame.pack(fill="x", pady=(10, 0))
+        
+        find_id_button = ctk.CTkButton(
+            id_buttons_frame,
+            text="Open Telegram",
+            command=lambda: webbrowser.open("https://t.me/userinfobot"),
+            height=30,
+            fg_color="#0088cc",
+            hover_color="#0077b5",
+            width=120
+        )
+        find_id_button.pack(side="left")
+        
+        submit_id_button = ctk.CTkButton(
+            id_buttons_frame,
+            text="Submit ID",
+            command=lambda: self._submit_telegram_id(id_entry.get(), status_var),
+            height=30,
+            fg_color="#4CAF50",
+            hover_color="#45a049",
+            width=120
+        )
+        submit_id_button.pack(side="right")
+        
+        # Service URL Frame
+        service_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+        service_frame.pack(fill="x", padx=10, pady=10)
+        
+        service_title = ctk.CTkLabel(
+            service_frame,
+            text="Step 2: Service Connection",
+            font=ctk.CTkFont(size=14, weight="bold"),
+            anchor="w"
+        )
+        service_title.pack(fill="x", pady=(0, 5))
+        
+        # Compact instructions
+        service_instructions = ctk.CTkLabel(
+            service_frame,
+            text="Connect to Devshare to receive screenshots from Telegram",
+            font=ctk.CTkFont(size=12),
+            justify="left",
+            anchor="w"
+        )
+        service_instructions.pack(fill="x", pady=(0, 10))
+        
+        # URL input row
+        url_input_frame = ctk.CTkFrame(service_frame, fg_color="transparent")
+        url_input_frame.pack(fill="x")
+        
+        url_label = ctk.CTkLabel(
+            url_input_frame,
+            text="Service URL:",
+            font=ctk.CTkFont(size=13),
+            width=110
+        )
+        url_label.pack(side="left")
+        
+        url_entry = ctk.CTkEntry(
+            url_input_frame,
+            height=30
+        )
+        url_entry.insert(0, self.service_url)
+        url_entry.pack(side="left", fill="x", expand=True, padx=(5, 0))
+        
+        # Bottom buttons
+        buttons_frame = ctk.CTkFrame(container, fg_color="transparent")
+        buttons_frame.pack(fill="x", pady=(10, 0))
+        
         def save_settings():
             user_id = id_entry.get().strip()
             url = url_entry.get().strip()
@@ -268,78 +272,60 @@ class SetupWizard:
             
             self.telegram_id = user_id
             self.service_url = url
-            self._save_config()
             
-            # Close the wizard
-            self.wizard.destroy()
-            
-            # Call the completion callback
-            if self.on_complete:
-                self.on_complete(user_id, url)
+            # Create config.json
+            if self._save_config():
+                status_var.set("Configuration saved successfully! Created config.json file.")
+                self.wizard.update()
+                
+                # Close the wizard with a delay to avoid animation errors
+                def close_window():
+                    if self.wizard:
+                        try:
+                            self.wizard.destroy()
+                            
+                            # Call the completion callback
+                            if self.on_complete:
+                                self.on_complete(user_id, url)
+                        except Exception as e:
+                            print(f"Error closing wizard: {e}")
+                
+                # Schedule the window close after animations complete
+                self.wizard.after(300, close_window)
+                
+            else:
+                status_var.set("Error saving configuration. Please try again.")
         
         save_button = ctk.CTkButton(
-            container,
+            buttons_frame,
             text="Save and Continue",
             command=save_settings,
             height=35,
-            width=150,
             font=ctk.CTkFont(size=14, weight="bold"),
             fg_color="#1976D2",
-            hover_color="#1565C0"
+            hover_color="#1565C0",
+            width=150
         )
-        save_button.pack(pady=10)
+        save_button.pack(side="right")
         
-        # If not called from another window, run mainloop
+        # Run mainloop if not called from another window
         if not self.parent:
             self.wizard.mainloop()
     
-    def _test_connection(self, user_id, service_url, status_var, test_button):
-        """Test the connection to the service"""
-        # Validate inputs
+    def _submit_telegram_id(self, user_id, status_var):
+        """Handle the submit ID button click"""
         user_id = user_id.strip()
-        service_url = service_url.strip()
         
         if not user_id:
             status_var.set("Please enter your Telegram ID")
             return
         
-        if not service_url:
-            status_var.set("Please enter the service URL")
-            return
+        # Store the ID and update status
+        self.telegram_id = user_id
         
-        if self.connection_test_in_progress:
-            return
-            
-        # Disable button during test
-        test_button.configure(state="disabled", text="Testing...")
-        self.connection_test_in_progress = True
-        
-        # Function to run in thread
-        def run_test():
-            try:
-                status_var.set("Connecting to service...")
-                
-                # Create a temporary CloudService instance
-                service = CloudService(user_id, config_file=None)
-                service.service_url = service_url
-                
-                # Try to connect
-                result = service.connect()
-                
-                if result:
-                    status_var.set("Connection successful! You can now use the app.")
-                else:
-                    status_var.set("Connection failed. Please check your settings.")
-                
-                # Clean up
-                service.disconnect()
-                
-            except Exception as e:
-                status_var.set(f"Error: {str(e)}")
-            finally:
-                # Re-enable button
-                test_button.configure(state="normal", text="Test Connection")
-                self.connection_test_in_progress = False
-        
-        # Start test in a separate thread
-        threading.Thread(target=run_test).start() 
+        # Create a temporary config file to ensure the ID is stored
+        temp_save = self._save_config()
+        if temp_save:
+            status_var.set(f"Telegram ID {user_id} stored successfully! Click 'Save and Continue' to complete setup.")
+        else:
+            status_var.set(f"Telegram ID {user_id} stored temporarily. There was an issue saving to config.json.") 

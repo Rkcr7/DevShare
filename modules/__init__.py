@@ -1,3 +1,3 @@
 """
-Screenshot Manager Modules Package
+DevShare Modules Package
 """ 

@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo Screenshot Manager - Easy Setup
+echo DevShare - Easy Setup
 echo ============================================
 echo.
 
@@ -64,7 +64,7 @@ if not exist config.json (
 
 echo.
 echo ============================================
-echo Setup complete! You can now run the application with run_screenshot_manager.bat
+echo Setup complete! You can now run the application with run_devshare.bat
 echo ============================================
 
 pause 

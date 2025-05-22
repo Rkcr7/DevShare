@@ -58,7 +58,7 @@ class TelegramBot:
         
         context.bot.send_message(
             chat_id=update.message.chat_id, 
-            text="Welcome to Screenshot Manager Bot! Send me screenshots from your phone, and I'll copy them to your PC clipboard."
+            text="Welcome to DevShare Bot! Send me screenshots from your phone, and I'll copy them to your PC clipboard."
         )
 
     def _photo_handler(self, update, context):
@@ -101,9 +101,9 @@ class TelegramBot:
             if self.notify_enabled:
                 try:
                     notification.notify(
-                        title="Screenshot Manager",
-                        message="Screenshot copied",  # Shorter message
-                        timeout=1  # Very short timeout (1 second)
+                        title="DevShare",
+                        message="New screenshot copied to clipboard.",
+                        timeout=5
                     )
                 except Exception as e:
                     print(f"Notification error: {str(e)}")

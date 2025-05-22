@@ -1,6 +1,6 @@
 """
-Screenshot Manager Main Module
-This script runs the Screenshot Manager application, connecting to the cloud service
+DevShare Main Module
+This script runs the DevShare application, connecting to the cloud service
 for handling screenshots sent from your phone via Telegram.
 """
 
