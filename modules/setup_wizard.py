@@ -206,10 +206,22 @@ class SetupWizard:
         )
         find_id_button.pack(side="left")
         
+        # Create a frame to hold the Submit button and status indicator
+        submit_frame = ctk.CTkFrame(id_buttons_frame, fg_color="transparent")
+        submit_frame.pack(side="right")
+        
+        # Config file indicator (initially hidden)
+        config_indicator = ctk.CTkLabel(
+            submit_frame,
+            text="✓ config.json",
+            font=ctk.CTkFont(size=12),
+            text_color="#4CAF50"
+        )
+        
         submit_id_button = ctk.CTkButton(
-            id_buttons_frame,
+            submit_frame,
             text="Submit ID",
-            command=lambda: self._submit_telegram_id(id_entry.get(), status_var),
+            command=lambda: self._submit_telegram_id(id_entry.get(), status_var, submit_id_button, config_indicator),
             height=30,
             fg_color="#4CAF50",
             hover_color="#45a049",
@@ -270,12 +282,16 @@ class SetupWizard:
                 status_var.set("Please enter your Telegram ID")
                 return
             
+            save_button.configure(state="disabled", text="Saving...")
+            self.wizard.update()
+            
             self.telegram_id = user_id
             self.service_url = url
             
             # Create config.json
             if self._save_config():
                 status_var.set("Configuration saved successfully! Created config.json file.")
+                save_button.configure(text="✓ Saved!")
                 self.wizard.update()
                 
                 # Close the wizard with a delay to avoid animation errors
@@ -291,10 +307,11 @@ class SetupWizard:
                             print(f"Error closing wizard: {e}")
                 
                 # Schedule the window close after animations complete
-                self.wizard.after(300, close_window)
+                self.wizard.after(700, close_window)
                 
             else:
                 status_var.set("Error saving configuration. Please try again.")
+                save_button.configure(state="normal", text="Save and Continue")
         
         save_button = ctk.CTkButton(
             buttons_frame,
@@ -312,7 +329,7 @@ class SetupWizard:
         if not self.parent:
             self.wizard.mainloop()
     
-    def _submit_telegram_id(self, user_id, status_var):
+    def _submit_telegram_id(self, user_id, status_var, submit_button, config_indicator):
         """Handle the submit ID button click"""
         user_id = user_id.strip()
         
@@ -320,12 +337,23 @@ class SetupWizard:
             status_var.set("Please enter your Telegram ID")
             return
         
+        # Disable the button and change text
+        submit_button.configure(state="disabled", text="Saving...")
+        self.wizard.update()
+        
         # Store the ID and update status
         self.telegram_id = user_id
         
         # Create a temporary config file to ensure the ID is stored
         temp_save = self._save_config()
         if temp_save:
+            # Show success state
+            submit_button.configure(text="ID Saved ✓", fg_color="#2E7D32")
+            config_indicator.pack(side="right", padx=(0, 10))
+            
+            # Update status message
             status_var.set(f"Telegram ID {user_id} stored successfully! Click 'Save and Continue' to complete setup.")
         else:
+            # Show error state
+            submit_button.configure(state="normal", text="Try Again", fg_color="#F44336")
             status_var.set(f"Telegram ID {user_id} stored temporarily. There was an issue saving to config.json.") 
