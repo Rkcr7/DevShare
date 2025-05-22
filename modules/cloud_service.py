@@ -197,8 +197,8 @@ class CloudService:
                     
                     # Convert to Python datetime
                     dt = datetime.fromisoformat(timestamp)
-                    # Format for filename
-                    formatted_timestamp = dt.strftime("%d-%m-%Y---%H:%M:%S")
+                    # Format for filename including milliseconds
+                    formatted_timestamp = dt.strftime("%d-%m-%Y---%H-%M-%S-%f")
                     
                     # Save screenshot to file
                     from modules.utils import get_screenshot_path, load_history, save_history
