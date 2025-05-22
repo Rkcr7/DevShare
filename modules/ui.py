@@ -2,6 +2,7 @@ import tkinter as tk
 import customtkinter as ctk
 import sys
 import os
+import time
 from PIL import Image
 
 from modules.utils import load_history, save_history
@@ -22,6 +23,11 @@ class ScreenshotUI:
         self.screenshot_list = None
         self.control_panel = None
         self.search_panel = None
+        
+        # Refresh control
+        self.last_refresh_time = 0
+        self.refresh_cooldown = 2.0  # Minimum seconds between refreshes
+        self.auto_refresh_interval = 10000  # Increased from 5000ms to 10000ms (10 seconds)
         
         # Load history
         self.load_history()
@@ -192,7 +198,7 @@ class ScreenshotUI:
         self.update_history_list()
         
         # Set up auto-refresh
-        self.root.after(5000, self.auto_refresh)
+        self.root.after(self.auto_refresh_interval, self.auto_refresh)
         
     def on_close(self):
         """Handle window closing event."""
@@ -231,12 +237,17 @@ class ScreenshotUI:
         """Filter history based on search query."""
         self.update_history_list(query)
         
-    def refresh_history(self):
-        """Manually refresh the history display."""
-        self.load_history()
-        query = self.search_panel.get_query() if self.search_panel else ""
-        self.update_history_list(query)
-        self.update_status("History refreshed")
+    def refresh_history(self, force=False):
+        """Manually refresh the history display with cooldown protection."""
+        current_time = time.time()
+        
+        # Only refresh if forced or if cooldown period has passed
+        if force or (current_time - self.last_refresh_time) >= self.refresh_cooldown:
+            self.last_refresh_time = current_time
+            self.load_history()
+            query = self.search_panel.get_query() if self.search_panel else ""
+            self.update_history_list(query)
+            self.update_status("History refreshed")
         
     def delete_all_screenshots(self):
         """Delete all screenshots."""
@@ -246,7 +257,14 @@ class ScreenshotUI:
             self.history = self.screenshot_list.history
         
     def auto_refresh(self):
-        """Periodically refresh the history list."""
-        query = self.search_panel.get_query() if self.search_panel else ""
-        self.update_history_list(query)
-        self.root.after(5000, self.auto_refresh)  # 5000 ms = 5 seconds 
+        """Periodically refresh the history list with cooldown protection."""
+        # Only refresh if no recent manual refresh
+        current_time = time.time()
+        if (current_time - self.last_refresh_time) >= self.refresh_cooldown:
+            query = self.search_panel.get_query() if self.search_panel else ""
+            self.load_history()  # Reload from file
+            self.update_history_list(query)
+            self.last_refresh_time = current_time
+            
+        # Schedule next auto refresh
+        self.root.after(self.auto_refresh_interval, self.auto_refresh) 
